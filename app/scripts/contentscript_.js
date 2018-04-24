@@ -1,109 +1,3 @@
-
-
-// var iframeDomain = 'http://127.0.0.1:8000';
-// var iframeHost = '127.0.0.1:8000';
-
-var iframeDomain = 'http://kupi.net';
-var iframeHost = 'kupi.net';
-
-window.addEventListener("message", function(event){
-
-	if (event.origin != iframeDomain) return;
-
-	if (event.data && event.data.source == "MetaMaskIO"){
-
-		console.log("popupFrame:" + JSON.stringify(event.data));
-
-		switch (event.data.action){
-			case "alert":
-				alert(event.data.message);
-
-				setTimeout(function(){ return function() {
-					window.postMessage({source: "MetaMaskPlugin", action: "alert", message: "test message response"}, event.origin);
-				}}(), 1000);
-				break;
-			default:
-				break;
-		}
-	}
-
-}, false);
-
-function waitForBody(){
-
-	if (document.body != null && document.body.innerHTML.length > 1){
-
-		if (window.self != window.top) return;
-
-		chrome.extension.sendMessage({action: "extsame"}, function(extsame){
-			if (!extsame){
-				if (document.location.host == iframeHost)
-					setTimeout(function(){ return function() {  appendFrame(); }}(), 1000);
-			}
-			else{
-				console.log('MetaMask duplicate found!')
-				renderReatctMessage();
-			}
-		});
-
-
-	}
-	else{
-		setTimeout(function(){ return function() {  waitForBody(); }}(), 10);
-	}
-}
-
-function appendFrame(){
-	var extensionId = chrome.i18n.getMessage("@@extension_id");
-
-	var iframe = document.createElement("iframe");
-	// iframe.id = "fraMetaMaskPopup";
-	iframe.src = "chrome-extension://" + extensionId + "/popup.html";
-	iframe.setAttribute("style", "width:357px; height:550px;");
-	// document.body.insertBefore(iframe, document.body.firstChild);
-	renderReatctIframe(iframe)
-}
-
-// function showMessage(){
-//
-// 	var div = document.createElement("div");
-// 	div.className = "duplicateFound";
-// 	div.innerHTML = "Установлен второй плагин";
-// 	renderREACTJS(div)
-// 	// document.body.insertBefore(div, document.body.firstChild);
-// }
-
-function renderReatctIframe(obj) {
-	if(document.getElementById('MetaMaskIframe') !== null) {
-		document.getElementById('MetaMaskIframe').replaceWith(obj);
-	} else {
-		setTimeout(function(){ return function() {  renderReatctIframe(obj); }}(), 10);
-		console.log('recheck....')
-	}
-}
-
-function renderReatctMessage() {
-	if(document.getElementById('MetaMaskDuplicate') !== null) {
-		document.getElementById('MetaMaskIframe').remove();
-		document.getElementById('MetaMaskDuplicate').className = 'MetaMaskDuplicate';
-	} else {
-		setTimeout(function(){ return function() {  renderReatctMessage(); }}(), 10);
-		// console.log('recheck....')
-	}
-}
-
-
-setTimeout(function(){ return function() {  waitForBody(); }}(), 100);
-
-
-
-
-
-
-
-
-
-
 const fs = require('fs')
 const path = require('path')
 const pump = require('pump')
@@ -124,20 +18,10 @@ const inpageBundle = inpageContent + inpageSuffix
 // If we create a FireFox-only code path using that API,
 // MetaMask will be much faster loading and performant on Firefox.
 
-// if (shouldInjectWeb3()) {
-//   setupInjection()
-//   setupStreams()
-// }
-chrome.extension.sendMessage({action: "extsame"}, function(extsame){
-	if (!extsame && document.location.host == iframeHost){
-
-		if (shouldInjectWeb3()) {
-		  setupInjection();
-		  setupStreams();
-		}
-
-	}
-});
+if (shouldInjectWeb3()) {
+  setupInjection()
+  setupStreams()
+}
 
 /**
  * Creates a script tag that injects inpage.js
@@ -282,7 +166,7 @@ function documentElementCheck () {
 
 /**
  * Checks if the current domain is blacklisted
- *
+ * 
  * @returns {boolean} {@code true} if the current domain is blacklisted
  */
 function blacklistedDomainCheck () {
